@@ -1,7 +1,8 @@
 from django.contrib.auth.models import AbstractUser,PermissionsMixin, BaseUserManager
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-import uuid
+from django.db.models.signals import pre_save,post_save
+from django.dispatch import receiver
 
 
 
@@ -43,7 +44,7 @@ class CustomUser(AbstractUser,PermissionsMixin):
     
     email = models.EmailField(_('email address'), unique=True)
     mobile = models.IntegerField(unique=True)
-    username = models.CharField(max_length=244,null=True)
+    username = models.CharField(max_length=244,null=True,blank=True)
     specification = models.CharField(max_length=50)
     is_otp_verified = models.BooleanField(default=False)
     is_block = models.BooleanField(default=False)
@@ -51,13 +52,9 @@ class CustomUser(AbstractUser,PermissionsMixin):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['mobile','username']
 
-    objects = CustomUserManager()
-
-    
-    
+    objects = CustomUserManager() 
     def __str__(self):  
         return f'{self.username}' 
-    
 
 
 

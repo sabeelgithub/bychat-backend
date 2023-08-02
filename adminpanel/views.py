@@ -5,6 +5,7 @@ from rest_framework.response import Response
 from accounts.models import CustomUser
 from .serializers import UsersListSerializer
 
+
 # Create your views here.
 
 
@@ -12,16 +13,12 @@ class Users(APIView):
     # get users list
     def get(self,request):
         try:
-            print('reached')
             users = CustomUser.objects.filter(is_superuser=False)
-            print(users,'users')
             if users:
               serializer = UsersListSerializer(users,many=True)
-              print(serializer)
               return Response({'users':serializer.data,'status':200})
             return Response({'message':'No users','status':404})
         except Exception as e:
-            print(e)
             return Response({'error':e})
     # block / unblock users
     def patch(self,request):
