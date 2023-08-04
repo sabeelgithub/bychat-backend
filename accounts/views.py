@@ -11,10 +11,8 @@ from .serializers import RegisterSerializer
 class Register(APIView):
     def post(self,request):
         try:
-            print(request.data)
             serializer = RegisterSerializer(data=request.data)
             if not serializer.is_valid():
-                print(serializer.errors)
                 return Response({'error':serializer.errors,'message':'something for serializer','status':500})
             serializer.save()           
             return Response({'message':'Registration Successfull,you can Login','status':201})

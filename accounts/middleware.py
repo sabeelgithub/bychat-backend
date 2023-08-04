@@ -1,23 +1,35 @@
 import json
 import re
 from django.http import HttpResponse,JsonResponse
+from django.core.cache import cache
 
 
-class EamilCheckingMiddleware:
-    def __init__(self,get_response):
+class RateLimitingMiddleware:
+    def __init__(self,get_response,rate_limit=2, window=15):
         self.get_response = get_response
-
+        self.rate_limit = rate_limit
+        self.window = window
+    
     def __call__(self, request):
-        # Code to be executed for each request before
-        # the view (and later middleware) are called.
-        data = json.loads(request.body)
-        pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        if re.match(pattern,data['email'] ) is not None:
-           response = self.get_response(request)
-        else:
-            return JsonResponse({'status':208,'error':'Middleware Rejected your request,because your email is invalid'})
-        # Code to be executed for each request/response after
-        # the view is called.
-        print('This your result')
+        # Generate a unique identifier for the client (e.g., using IP address)
+        client_identifier = self.get_client_identifier(request)
+
+        # Get the current request count for the client from cache
+        request_count = cache.get(client_identifier, 0)
+
+        # If the request count exceeds the rate limit, return a Forbidden response
+        if request_count >= self.rate_limit:
+            return JsonResponse({'status':208,'error':"Too many requests. Please try again later."})
+
+        # Increment the request count and set it back in cache
+        cache.set(client_identifier, request_count + 1, self.window)
+
+        # Continue with the regular request/response handling
+        response = self.get_response(request)
+
         return response
+    
+    def get_client_identifier(self, request):
+        # For simplicity, let's use the client's IP address as the identifier
+        return request.META.get('REMOTE_ADDR')
         
