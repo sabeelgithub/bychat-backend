@@ -1,11 +1,9 @@
-import json
-import re
-from django.http import HttpResponse,JsonResponse
+from django.http import JsonResponse
 from django.core.cache import cache
 
 
 class RateLimitingMiddleware:
-    def __init__(self,get_response,rate_limit=2, window=15):
+    def __init__(self,get_response,rate_limit=20, window=10):
         self.get_response = get_response
         self.rate_limit = rate_limit
         self.window = window
